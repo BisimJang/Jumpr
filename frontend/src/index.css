@@ -85,6 +85,42 @@ body {
   letter-spacing: -0.02em;
 }
 
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--accent-light);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
 .bob-badge {
   display: inline-flex;
   align-items: center;
@@ -125,9 +161,11 @@ body {
    ============================================ */
 
 .home-container {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 4rem 2rem;
+  transform: scale(0.8);
+  transform-origin: top center;
 }
 
 .home-hero {
