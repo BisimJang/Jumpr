@@ -608,7 +608,7 @@ function App() {
           {/* Result Panels */}
           {mode === 'analyze' && (
             <>
-              {activeTab === 0 && results.architecture && (
+              {activeTab === 0 && (results.architecture || results.file_tree) && (
                 <div className="result-panel">
                   <div className="panel-header">
                     <svg className="panel-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -617,17 +617,34 @@ function App() {
                     <h3 className="panel-title">Architecture</h3>
                   </div>
                   <div className="panel-body">
-                    <p>{results.architecture.overview}</p>
-                    {results.architecture.patterns && (
-                      <ul style={{ marginTop: '1rem', paddingLeft: '1.5rem' }}>
-                        {results.architecture.patterns.map((pattern, i) => (
-                          <li key={i} style={{ marginBottom: '0.5rem' }}>{pattern}</li>
-                        ))}
-                      </ul>
+                    {results.architecture && (
+                      <>
+                        <p>{results.architecture.overview}</p>
+                        {results.architecture.patterns && (
+                          <ul style={{ marginTop: '1rem', paddingLeft: '1.5rem' }}>
+                            {results.architecture.patterns.map((pattern, i) => (
+                              <li key={i} style={{ marginBottom: '0.5rem' }}>{pattern}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    )}
+                    {results.file_tree && results.file_tree.length > 0 && (
+                      <div style={{ marginTop: '1.5rem' }}>
+                        <p style={{ fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                          📁 Repository Files ({results.file_tree.length} files detected)
+                        </p>
+                        <div className="code-block" style={{ maxHeight: '260px', overflowY: 'auto' }}>
+                          <pre style={{ fontSize: '0.78rem', lineHeight: '1.7' }}>
+                            {results.file_tree.join('\n')}
+                          </pre>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
               )}
+
 
               {activeTab === 1 && results.hardware_mapping && (
                 <div className="result-panel">

@@ -277,6 +277,8 @@ Generate ONLY valid JSON. No text before or after."""
             raise ValueError("No JSON found in analysis response")
 
         parsed = json.loads(text[start:end], strict=False)
+        # Inject the file tree so the frontend can display it
+        parsed["file_tree"] = file_list
         return parsed
 
     except HTTPException:
