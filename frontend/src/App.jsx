@@ -55,7 +55,8 @@ function App() {
     if (screen === 'loading') {
       interval = setInterval(async () => {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/live-updates`);
+          const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+          const response = await fetch(`${baseUrl}/live-updates`);
           const data = await response.json();
           if (data.insights) {
             setResults(data.insights);
@@ -129,7 +130,8 @@ function App() {
       if (file) {
         formData.append('file', file);
       }
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/analyze`, {
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      await fetch(`${baseUrl}/analyze`, {
         method: 'POST',
         body: formData,
       });
@@ -145,7 +147,8 @@ function App() {
     setCurrentStep(0);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/generate`, {
+      const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
