@@ -1,0 +1,56 @@
+{
+  "folder_structure": {
+    "line_follower_robot": {
+      "src": [
+        "main.ino"
+      ],
+      "lib": [
+        "motor_control.h",
+        "motor_control.cpp",
+        "ir_sensor.h",
+        "ir_sensor.cpp"
+      ],
+      "docs": [
+        "wiring_diagram.md",
+        "assembly_guide.md"
+      ],
+      "examples": [
+        "calibration.ino",
+        "motor_test.ino"
+      ]
+    }
+  },
+  "pin_wiring": {
+    "motor_left": {
+      "pwm": "5",
+      "dir1": "6",
+      "dir2": "7",
+      "description": "Left DC motor connected to L298N motor driver"
+    },
+    "motor_right": {
+      "pwm": "9",
+      "dir1": "10",
+      "dir2": "11",
+      "description": "Right DC motor connected to L298N motor driver"
+    },
+    "ir_sensor_left": {
+      "signal": "A0",
+      "vcc": "5V",
+      "gnd": "GND",
+      "description": "Left IR sensor for line detection"
+    },
+    "ir_sensor_right": {
+      "signal": "A1",
+      "vcc": "5V",
+      "gnd": "GND",
+      "description": "Right IR sensor for line detection"
+    },
+    "power": {
+      "motor_supply": "12V external battery",
+      "arduino_supply": "USB or 9V battery",
+      "description": "Separate power supplies for motors and logic"
+    }
+  },
+  "starter_code": "/*\n * Line Follower Robot\n * Hardware: Arduino Uno, 2 DC Motors, 2 IR Sensors\n * \n * This code implements a basic line following algorithm\n * using two IR sensors and differential drive control.\n */\n\n// Motor pins\nconst int MOTOR_LEFT_PWM = 5;\nconst int MOTOR_LEFT_DIR1 = 6;\nconst int MOTOR_LEFT_DIR2 = 7;\n\nconst int MOTOR_RIGHT_PWM = 9;\nconst int MOTOR_RIGHT_DIR1 = 10;\nconst int MOTOR_RIGHT_DIR2 = 11;\n\n// IR sensor pins\nconst int IR_LEFT = A0;\nconst int IR_RIGHT = A1;\n\n// Speed settings\nconst int BASE_SPEED = 150;  // 0-255\nconst int TURN_SPEED = 100;\n\n// Sensor threshold (calibrate based on your surface)\nconst int THRESHOLD = 500;\n\nvoid setup() {\n  // Initialize serial for debugging\n  Serial.begin(9600);\n  \n  // Configure motor pins as outputs\n  pinMode(MOTOR_LEFT_PWM, OUTPUT);\n  pinMode(MOTOR_LEFT_DIR1, OUTPUT);\n  pinMode(MOTOR_LEFT_DIR2, OUTPUT);\n  \n  pinMode(MOTOR_RIGHT_PWM, OUTPUT);\n  pinMode(MOTOR_RIGHT_DIR1, OUTPUT);\n  pinMode(MOTOR_RIGHT_DIR2, OUTPUT);\n  \n  // Configure IR sensor pins as inputs\n  pinMode(IR_LEFT, INPUT);\n  pinMode(IR_RIGHT, INPUT);\n  \n  Serial.println(\"Line Follower Robot Initialized\");\n  delay(2000);  // Wait 2 seconds before starting\n}\n\nvoid loop() {\n  // Read IR sensors\n  int leftSensor = analogRead(IR_LEFT);\n  int rightSensor = analogRead(IR_RIGHT);\n  \n  // Debug output\n  Serial.print(\"Left: \");\n  Serial.print(leftSensor);\n  Serial.print(\" Right: \");\n  Serial.println(rightSensor);\n  \n  // Determine line position\n  bool leftOnLine = (leftSensor > THRESHOLD);\n  bool rightOnLine = (rightSensor > THRESHOLD);\n  \n  // Line following logic\n  if (leftOnLine && rightOnLine) {\n    // Both sensors on line - move forward\n    moveForward(BASE_SPEED);\n  }\n  else if (leftOnLine && !rightOnLine) {\n    // Left sensor on line - turn left\n    turnLeft(TURN_SPEED);\n  }\n  else if (!leftOnLine && rightOnLine) {\n    // Right sensor on line - turn right\n    turnRight(TURN_SPEED);\n  }\n  else {\n    // Both sensors off line - stop\n    stopMotors();\n  }\n  \n  delay(10);  // Small delay for stability\n}\n\nvoid moveForward(int speed) {\n  // Left motor forward\n  digitalWrite(MOTOR_LEFT_DIR1, HIGH);\n  digitalWrite(MOTOR_LEFT_DIR2, LOW);\n  analogWrite(MOTOR_LEFT_PWM, speed);\n  \n  // Right motor forward\n  digitalWrite(MOTOR_RIGHT_DIR1, HIGH);\n  digitalWrite(MOTOR_RIGHT_DIR2, LOW);\n  analogWrite(MOTOR_RIGHT_PWM, speed);\n}\n\nvoid turnLeft(int speed) {\n  // Left motor slow/stop\n  digitalWrite(MOTOR_LEFT_DIR1, LOW);\n  digitalWrite(MOTOR_LEFT_DIR2, LOW);\n  analogWrite(MOTOR_LEFT_PWM, 0);\n  \n  // Right motor forward\n  digitalWrite(MOTOR_RIGHT_DIR1, HIGH);\n  digitalWrite(MOTOR_RIGHT_DIR2, LOW);\n  analogWrite(MOTOR_RIGHT_PWM, speed);\n}\n\nvoid turnRight(int speed) {\n  // Left motor forward\n  digitalWrite(MOTOR_LEFT_DIR1, HIGH);\n  digitalWrite(MOTOR_LEFT_DIR2, LOW);\n  analogWrite(MOTOR_LEFT_PWM, speed);\n  \n  // Right motor slow/stop\n  digitalWrite(MOTOR_RIGHT_DIR1, LOW);\n  digitalWrite(MOTOR_RIGHT_DIR2, LOW);\n  analogWrite(MOTOR_RIGHT_PWM, 0);\n}\n\nvoid stopMotors() {\n  // Stop both motors\n  digitalWrite(MOTOR_LEFT_DIR1, LOW);\n  digitalWrite(MOTOR_LEFT_DIR2, LOW);\n  analogWrite(MOTOR_LEFT_PWM, 0);\n  \n  digitalWrite(MOTOR_RIGHT_DIR1, LOW);\n  digitalWrite(MOTOR_RIGHT_DIR2, LOW);\n  analogWrite(MOTOR_RIGHT_PWM, 0);\n}",
+  "readme": "# Line Follower Robot\n\n## Description\n\nA line following robot built with Arduino Uno that uses two IR sensors to detect and follow a black line on a white surface. The robot uses differential drive with two DC motors for movement control.\n\n## Components\n\n### Required Hardware\n- **Arduino Uno** - Main microcontroller\n- **2x DC Motors** - Drive motors (6-12V recommended)\n- **L298N Motor Driver** - Controls the DC motors\n- **2x IR Sensors** - Line detection sensors\n- **Chassis** - Robot body with wheels\n- **Power Supply** - 12V battery for motors, USB/9V for Arduino\n- **Jumper Wires** - For connections\n\n### Optional Components\n- Battery holder\n- Power switch\n- LED indicators\n- Ultrasonic sensor (for obstacle detection)\n\n## Wiring\n\n### Motor Connections (L298N Driver)\n\n**Left Motor:**\n- PWM (Speed Control) → Arduino Pin 5\n- Direction 1 → Arduino Pin 6\n- Direction 2 → Arduino Pin 7\n- Motor terminals → L298N OUT1 & OUT2\n\n**Right Motor:**\n- PWM (Speed Control) → Arduino Pin 9\n- Direction 1 → Arduino Pin 10\n- Direction 2 → Arduino Pin 11\n- Motor terminals → L298N OUT3 & OUT4\n\n### IR Sensor Connections\n\n**Left IR Sensor:**\n- Signal → Arduino Pin A0\n- VCC → Arduino 5V\n- GND → Arduino GND\n\n**Right IR Sensor:**\n- Signal → Arduino Pin A1\n- VCC → Arduino 5V\n- GND → Arduino GND\n\n### Power Supply\n- L298N 12V input → External 12V battery\n- L298N GND → Common ground with Arduino\n- Arduino → USB (for programming) or 9V battery (for operation)\n\n**Important:** Keep motor power and logic power separate to avoid voltage drops affecting the Arduino.\n\n## Setup\n\n### 1. Hardware Assembly\n1. Mount the Arduino Uno on the chassis\n2. Attach the L298N motor driver\n3. Connect the DC motors to the chassis wheels\n4. Mount IR sensors at the front, facing downward (2-3mm from ground)\n5. Wire all components according to the wiring diagram above\n6. Secure the battery pack\n\n### 2. Software Installation\n1. Install Arduino IDE from [arduino.cc](https://www.arduino.cc/en/software)\n2. Connect Arduino Uno via USB\n3. Select **Tools → Board → Arduino Uno**\n4. Select the correct COM port under **Tools → Port**\n5. Open `src/main.ino`\n6. Click **Upload** to flash the code\n\n### 3. Calibration\n1. Open **Tools → Serial Monitor** (set to 9600 baud)\n2. Place the robot on your track\n3. Observe the sensor readings:\n   - On white surface: Low values (< 500)\n   - On black line: High values (> 500)\n4. Adjust the `THRESHOLD` constant in the code if needed\n5. Test with `examples/calibration.ino` for detailed calibration\n\n## Usage\n\n### Basic Operation\n1. Create a black line track on white surface (electrical tape works well)\n2. Place the robot on the line\n3. Power on the Arduino and motor driver\n4. The robot should automatically follow the line\n\n### Tuning Performance\n- **Speed:** Adjust `BASE_SPEED` (0-255) for overall speed\n- **Turning:** Adjust `TURN_SPEED` for turn responsiveness\n- **Sensitivity:** Adjust `THRESHOLD` for different surfaces\n\n### Troubleshooting\n\n**Robot doesn't move:**\n- Check motor power supply\n- Verify motor driver connections\n- Test motors individually with `examples/motor_test.ino`\n\n**Robot doesn't follow line:**\n- Calibrate IR sensors\n- Check sensor height (should be 2-3mm from ground)\n- Verify line contrast (black on white)\n\n**Erratic behavior:**\n- Check for loose connections\n- Ensure common ground between Arduino and motor driver\n- Reduce speed if oscillating\n\n## Code Structure\n\n```\nline_follower_robot/\n├── src/\n│   └── main.ino          # Main program\n├── lib/\n│   ├── motor_control.h   # Motor control library\n│   ├── motor_control.cpp\n│   ├── ir_sensor.h       # IR sensor library\n│   └── ir_sensor.cpp\n├── docs/\n│   ├── wiring_diagram.md # Detailed wiring guide\n│   └── assembly_guide.md # Assembly instructions\n└── examples/\n    ├── calibration.ino   # Sensor calibration tool\n    └── motor_test.ino    # Motor testing utility\n```\n\n## Advanced Features\n\nConsider adding:\n- PID control for smoother line following\n- Speed adjustment based on line curvature\n- Obstacle detection with ultrasonic sensor\n- Bluetooth control for manual override\n- OLED display for status information\n\n## License\n\nMIT License - Feel free to modify and distribute\n\n## Contributing\n\nContributions welcome! Please test thoroughly before submitting pull requests.\n\n## Support\n\nFor issues or questions, please open an issue on the project repository."
+}

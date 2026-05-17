@@ -1,0 +1,15 @@
+{
+  "telemetry.telemetryLevel": "all",
+  "chat.mcp.serverSampling": {},
+  "mcpServers": {
+    "bob-analyzer": {
+      "command": "python",
+      "args": [
+        "c:/Users/Jason/Desktop/bob/Spark/backend/bob_service.py"
+      ],
+      "env": {
+        "PYTHONPATH": "c:/Users/Jason/Desktop/bob/Spark/backend"
+      }
+    }
+  }
+}

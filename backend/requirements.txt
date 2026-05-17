@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+python-magic; platform_system != "Windows"
+python-magic-bin; platform_system == "Windows"
+aiofiles
+jinja2
+
+ibm-watsonx-ai
+python-dotenv
