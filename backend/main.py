@@ -1,5 +1,7 @@
 import os
+import io
 import json
+import zipfile
 import traceback
 from typing import Dict, Any
 from fastapi import FastAPI, UploadFile, File, HTTPException
@@ -185,11 +187,103 @@ def parse_llm_response(response: Dict[str, Any]) -> Dict[str, Any]:
 @app.post("/analyze")
 async def analyze_repository(file: UploadFile = File(...)):
     """
-    Triggers the analysis view. If Bob has already submitted data via MCP, 
-    it returns that. Otherwise, it prepares for Bob's input.
+    Reads an uploaded .zip repository and uses watsonx.ai to analyze its
+    architecture, hardware mapping, control flow, protocols, risks, and
+    generate an onboarding summary.
     """
-    # In a real hackathon, this would notify Bob to start analysis
-    return await bob.analyze_repo_fallback(file.filename, [file.filename])
+    try:
+        # Read the uploaded zip bytes
+        raw = await file.read()
+        file_list = []
+        code_sample = ""
+        try:
+            with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                file_list = zf.namelist()
+                # Grab up to 6000 chars of source code for context
+                for name in file_list:
+                    if any(name.endswith(ext) for ext in (".ino", ".cpp", ".c", ".h", ".py", ".js")):
+                        try:
+                            content = zf.read(name).decode("utf-8", errors="ignore")
+                            code_sample += f"\n\n// === {name} ===\n" + content[:1500]
+                            if len(code_sample) > 6000:
+                                break
+                        except Exception:
+                            pass
+        except zipfile.BadZipFile:
+            raise HTTPException(status_code=400, detail="Uploaded file is not a valid .zip archive.")
+
+        file_tree = "\n".join(file_list[:60])
+
+        prompt = f"""You are an expert robotics software engineer performing a deep repository analysis.
+
+Repository file tree:
+{file_tree}
+
+Code sample:
+{code_sample[:4000] if code_sample else 'No source code found.'}
+
+Analyze this robotics codebase and return ONLY a valid JSON object with this exact structure:
+{{
+  "architecture": {{
+    "overview": "2-3 sentence summary of the overall architecture and design pattern",
+    "patterns": ["pattern 1", "pattern 2", "pattern 3"]
+  }},
+  "hardware_mapping": {{
+    "resource_utilization": "description of detected hardware targets and boards",
+    "deployment_targets": ["target 1", "target 2"]
+  }},
+  "control_flow": {{
+    "primary_pipeline": "description of the main execution loop or pipeline",
+    "error_handling": "description of error handling strategy"
+  }},
+  "communication": {{
+    "internal": "description of internal communication patterns",
+    "protocols": ["protocol 1", "protocol 2"]
+  }},
+  "risks": ["risk 1", "risk 2", "risk 3"],
+  "onboarding_summary": {{
+    "tldr": "2-3 sentence quick-start guide for a new developer",
+    "key_files": ["file1", "file2", "file3"]
+  }}
+}}
+
+Generate ONLY valid JSON. No text before or after."""
+
+        model = get_watsonx_model()
+        messages = [{'role': 'user', 'content': prompt}]
+        response = model.chat(messages=messages, params={'max_tokens': 2048})
+
+        # Extract text
+        text = ""
+        if isinstance(response, dict):
+            choices = response.get("choices", [])
+            if choices:
+                text = choices[0].get("message", {}).get("content", "")
+        else:
+            text = str(response)
+
+        # Strip markdown fences
+        text = text.strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            lines = lines[1:]
+            if lines and lines[-1].strip() == "```":
+                lines = lines[:-1]
+            text = "\n".join(lines)
+
+        start = text.find("{")
+        end = text.rfind("}") + 1
+        if start == -1 or end == 0:
+            raise ValueError("No JSON found in analysis response")
+
+        parsed = json.loads(text[start:end], strict=False)
+        return parsed
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 @app.get("/live-updates")
 async def get_live_updates():

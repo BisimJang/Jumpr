@@ -131,12 +131,21 @@ function App() {
         formData.append('file', file);
       }
       const baseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
-      await fetch(`${baseUrl}/analyze`, {
+      const response = await fetch(`${baseUrl}/analyze`, {
         method: 'POST',
         body: formData,
       });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(err.detail || 'Analysis failed');
+      }
+      const data = await response.json();
+      setResults(data);
+      setScreen('results');
     } catch (err) {
       console.error("Analysis failed:", err);
+      setScreen('landing');
+      alert(`Analysis failed: ${err.message}`);
     }
   };
 
@@ -477,6 +486,9 @@ function App() {
                 />
                 <button className="fetch-button">Fetch</button>
               </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-muted, #7a9e88)', marginTop: '6px', paddingLeft: '2px' }}>
+                ⚠️ GitHub URL must point to a <strong>public</strong> repository.
+              </p>
 
               <button 
                 className="primary-button"
