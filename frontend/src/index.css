@@ -1304,9 +1304,45 @@ body {
     font-size: 1rem;
   }
   
-  .home-features,
-  .home-actions {
+  .home-features {
     grid-template-columns: 1fr;
+  }
+  
+  .feature-section {
+    grid-template-columns: 1fr;
+    padding: 10vh 2rem;
+    gap: 3rem;
+  }
+  
+  .section-left .section-content,
+  .section-left .section-visual,
+  .section-right .section-content,
+  .section-right .section-visual {
+    order: unset;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+  }
+  
+  .section-description {
+    font-size: 1rem;
+  }
+  
+  .code-visual,
+  .pin-diagram,
+  .download-visual {
+    padding: 1.5rem;
+  }
+  
+  .pin-row {
+    gap: 0.5rem;
+  }
+  
+  .pin {
+    width: 50px;
+    height: 50px;
+    font-size: 0.75rem;
   }
   
   .landing-container {
