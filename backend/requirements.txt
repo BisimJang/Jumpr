@@ -9,3 +9,5 @@ jinja2
 
 ibm-watsonx-ai
 python-dotenv
+fastmcp
+httpx
