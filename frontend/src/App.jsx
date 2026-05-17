@@ -238,10 +238,7 @@ function App() {
             </div>
           )}
         </div>
-        <div className="topbar-nav">
-          <a href="#chat" className="nav-link" onClick={(e) => { e.preventDefault(); alert("Bob Chat Interface coming soon! (V2 Feature)"); }}>Chat</a>
-          <a href="#about" className="nav-link" onClick={(e) => { e.preventDefault(); alert("Jumpr is an AI-powered robotics scaffolding engine built with IBM watsonx.ai."); }}>About</a>
-        </div>
+
         <div className="bob-badge">
           Powered by IBM Bob
         </div>
